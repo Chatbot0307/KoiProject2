@@ -12,4 +12,6 @@ public class Unit : MonoBehaviour
     public bool Attack;
     public bool Defense;
     public bool Counter;
+
+    public bool PCBehavior;
 }

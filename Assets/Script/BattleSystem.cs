@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BattleState { START, DICEROLL, BEHAVIOUR, RESULT, WON, LOST }
+public enum BattleState { START, DICEROLL, BEHAVIOR, RESULT, WON, LOST }
 
 public class BattleSystem : MonoBehaviour
 {
@@ -15,13 +15,10 @@ public class BattleSystem : MonoBehaviour
     Unit PC1Unit;
     Unit PC2Unit;
 
-    public BattleState state;
-
     public int Dice1;
     public int Dice2;
 
-    public bool PC1Behaviour;
-    public bool PC2Behaviour;
+    public BattleState state;
 
     void Start()
     {
@@ -47,46 +44,92 @@ public class BattleSystem : MonoBehaviour
     {
         Dice1 = Random.Range(1, 7);
         Dice2 = Random.Range(1, 7);
+        
+        Debug.Log(Dice1 + "vs" + Dice2);
 
-        Debug.Log(Dice1);
-        Debug.Log(Dice2);
-
-        state = BattleState.BEHAVIOUR;
-        BEHAVIOUR();
+        state = BattleState.BEHAVIOR;
+        BEHAVIOR();
     }
 
-    void BEHAVIOUR()
+    void BEHAVIOR()
     {
-        if(PC1Behaviour && PC2Behaviour)
+        EnemyAction();
+        if(PC1Unit.PCBehavior == true && PC2Unit.PCBehavior == true)
         {
             state = BattleState.RESULT;
             RESULT();
         }
-    }
+    }   
 
+    void EnemyAction()
+    {
+        int enemyBehavior = Random.Range(1, 4);
+
+        if(enemyBehavior == 1)
+        {
+            PC2Unit.Attack = true;
+            PC2Unit.PCBehavior = true;
+        }
+
+        else if (enemyBehavior == 2)
+        {
+            PC2Unit.Defense = true;
+            PC2Unit.PCBehavior = true;
+        }
+
+        else if (enemyBehavior == 3)
+        {
+            PC2Unit.Counter = true;
+            PC2Unit.PCBehavior = true;
+        }
+    }
+    
     public void OnAttackButton()
     {
-        if(state != BattleState.BEHAVIOUR)
+        if(state != BattleState.BEHAVIOR)
             return;
         PC1Unit.Attack = true;
+        PC1Unit.PCBehavior = true;
     }
 
     public void OnDefenseButton()
     {
-        if(state != BattleState.BEHAVIOUR)
+        if(state != BattleState.BEHAVIOR)
             return;
         PC1Unit.Defense = true;
+        PC1Unit.PCBehavior = true;
     }
 
-    public void OnCounterButton()
+    public void OnCounterButton()   
     {
-        if(state != BattleState.BEHAVIOUR)
+        if(state != BattleState.BEHAVIOR)
             return;
         PC1Unit.Counter = true;
+        PC1Unit.PCBehavior = true;
     }
 
     void RESULT()
     {
-        
+        Debug.Log("결과창입니다.");
+        if(PC1Unit.Attack && PC2Unit.Attack)
+        {
+            Debug.Log("아무일도 일어나지 않았다");
+            state = BattleState.START;
+            StartCoroutine(SetupBattle());
+        }
+
+        if (PC1Unit.Defense && PC2Unit.Defense)
+        {
+            Debug.Log("아무일도 일어나지 않았다");
+            state = BattleState.START;
+            StartCoroutine(SetupBattle());
+        }
+
+        if (PC1Unit.Counter && PC2Unit.Counter)
+        {
+            Debug.Log("아무일도 일어나지 않았다");
+            state = BattleState.START;
+            StartCoroutine(SetupBattle());
+        }
     }
 }
