@@ -54,82 +54,192 @@ public class BattleSystem : MonoBehaviour
     void BEHAVIOR()
     {
         EnemyAction();
-        if(PC1Unit.PCBehavior == true && PC2Unit.PCBehavior == true)
+        if(PC1Unit.PCBehavior && PC2Unit.PCBehavior)
         {
             state = BattleState.RESULT;
             RESULT();
         }
-    }   
+    }
 
+    #region 적 행동
     void EnemyAction()
     {
         int enemyBehavior = Random.Range(1, 4);
 
-        if(enemyBehavior == 1)
+        switch(enemyBehavior)
         {
-            PC2Unit.Attack = true;
-            PC2Unit.PCBehavior = true;
-        }
-
-        else if (enemyBehavior == 2)
-        {
-            PC2Unit.Defense = true;
-            PC2Unit.PCBehavior = true;
-        }
-
-        else if (enemyBehavior == 3)
-        {
-            PC2Unit.Counter = true;
-            PC2Unit.PCBehavior = true;
+            case 1:
+                PC2Unit.Attack = true;
+                PC2Unit.PCBehavior = true;
+                break;
+            case 2:
+                PC2Unit.Defense = true;
+                PC2Unit.PCBehavior = true;
+                break;
+            case 3:
+                PC2Unit.Counter = true;
+                PC2Unit.PCBehavior = true;
+                break;
         }
     }
-    
+    #endregion
+
+    #region 버튼
     public void OnAttackButton()
     {
         if(state != BattleState.BEHAVIOR)
             return;
-        PC1Unit.Attack = true;
-        PC1Unit.PCBehavior = true;
+
+        if(PC1Unit.turnSkip == false)
+        {
+            PC1Unit.Attack = true;
+            PC1Unit.PCBehavior = true;
+        }
+        else
+        {
+            PC1Unit.turnSkip = false;
+            PC1Unit.PCBehavior = true;
+        }
+
+        BEHAVIOR();
     }
 
     public void OnDefenseButton()
     {
         if(state != BattleState.BEHAVIOR)
             return;
-        PC1Unit.Defense = true;
-        PC1Unit.PCBehavior = true;
+
+        if (PC1Unit.turnSkip == false)
+        {
+            PC1Unit.Defense = true;
+            PC1Unit.PCBehavior = true;
+        }
+        else
+        {
+            PC1Unit.turnSkip = false;
+            PC1Unit.PCBehavior = true;
+        }
+
+        BEHAVIOR();
     }
 
     public void OnCounterButton()   
     {
         if(state != BattleState.BEHAVIOR)
             return;
-        PC1Unit.Counter = true;
-        PC1Unit.PCBehavior = true;
+
+        if (PC1Unit.turnSkip == false)
+        {
+            PC1Unit.Counter = true;
+            PC1Unit.PCBehavior = true;
+        }
+        else
+        {
+            PC1Unit.turnSkip = false;
+            PC1Unit.PCBehavior = true;
+        }
+
+        BEHAVIOR();
     }
+    #endregion
 
     void RESULT()
     {
-        Debug.Log("���â�Դϴ�.");
-        if(PC1Unit.Attack && PC2Unit.Attack)
+        Debug.Log("결과창입니다.");
+
+        if (PC1Unit.Attack && PC2Unit.Attack)
         {
-            Debug.Log("�ƹ��ϵ� �Ͼ�� �ʾҴ�");
+            Debug.Log("아무일도 일어나지 않았다.");
             state = BattleState.START;
             StartCoroutine(SetupBattle());
         }
 
         if (PC1Unit.Defense && PC2Unit.Defense)
         {
-            Debug.Log("�ƹ��ϵ� �Ͼ�� �ʾҴ�");
+            Debug.Log("아무일도 일어나지 않았다.");
             state = BattleState.START;
             StartCoroutine(SetupBattle());
         }
 
         if (PC1Unit.Counter && PC2Unit.Counter)
         {
-            Debug.Log("�ƹ��ϵ� �Ͼ�� �ʾҴ�");
+            Debug.Log("아무일도 일어나지 않았다.");
             state = BattleState.START;
             StartCoroutine(SetupBattle());
+        }
+
+        if (PC1Unit.Attack && PC2Unit.Defense)
+        {
+            if (Dice1 > Dice2)
+            {
+                PC2Unit.currentHP -= Dice2 - Dice1;
+                state = BattleState.START;
+                StartCoroutine(SetupBattle());
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+                state = BattleState.START;
+                StartCoroutine(SetupBattle());
+            }
+        }
+
+        if (PC1Unit.Defense && PC2Unit.Attack)
+        {
+            if (Dice1 < Dice2)
+            {
+                PC1Unit.currentHP -= Dice2 - Dice1;
+                state = BattleState.START;
+                StartCoroutine(SetupBattle());
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+                state = BattleState.START;
+                StartCoroutine(SetupBattle());
+            }
+        }
+
+        if (PC1Unit.Counter && PC2Unit.Defense)
+        {
+            if (Dice1 < Dice2)
+            {
+                PC1Unit.turnSkip = true;
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+                state = BattleState.START;
+                StartCoroutine(SetupBattle());
+            }
+        }
+
+        if (PC1Unit.Defense && PC2Unit.Counter)
+        {
+            if (Dice1 > Dice2)
+            {
+                PC1Unit.turnSkip = true;
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+                state = BattleState.START;
+                StartCoroutine(SetupBattle());
+            }
+        }
+
+        if (PC1Unit.Counter && PC2Unit.Attack)
+        {
+            if (Dice1 > Dice2)
+            {
+                PC1Unit.currentHP -= Dice1 + Dice2;
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+                state = BattleState.START;
+                StartCoroutine(SetupBattle());
+            }
         }
     }
 }

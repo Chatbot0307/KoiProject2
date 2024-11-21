@@ -6,12 +6,14 @@ public class Unit : MonoBehaviour
 {
     public string unitName;
 
-    public int maxHP;
-    public int currentHP;
+    public int maxHP = 20;
+    public int currentHP = 20;
 
     public bool Attack;
     public bool Defense;
     public bool Counter;
+
+    public bool turnSkip;
 
     public bool PCBehavior;
 }
