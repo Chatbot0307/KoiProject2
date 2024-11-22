@@ -7,7 +7,7 @@ public class Unit : MonoBehaviour
     public string unitName;
 
     public int maxHP = 20;
-    public int currentHP = 20;
+    public int currentHP;
 
     public bool Attack;
     public bool Defense;

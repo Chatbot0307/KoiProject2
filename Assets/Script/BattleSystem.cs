@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum BattleState { START, DICEROLL, BEHAVIOR, RESULT, WON, LOST }
+public enum BattleState { Start, ResetTurn, DiceRoll, Action, Result, Won, Lost }
 
 public class BattleSystem : MonoBehaviour
 {
@@ -19,10 +19,11 @@ public class BattleSystem : MonoBehaviour
     public int Dice2;
 
     public BattleState state;
+    public int Turn;
 
     void Start()
     {
-        state = BattleState.START;
+        state = BattleState.Start;
         StartCoroutine(SetupBattle());
     }
 
@@ -34,30 +35,49 @@ public class BattleSystem : MonoBehaviour
         GameObject PC2Go = Instantiate(PC2, PC2BattleStation);
         PC2Unit = PC2Go.GetComponent<Unit>();
 
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
 
-        state = BattleState.DICEROLL;
-        DICEROLL();
+        state = BattleState.DiceRoll;
+        DiceRoll();
     }
 
-    void DICEROLL()
+    void ResetTurn()
+    {
+        Debug.Log("PC1체력 : " + PC1Unit.currentHP + "PC2체력 : " + PC2Unit.currentHP);
+
+        PC1Unit.Attack = false;
+        PC2Unit.Attack = false;
+
+        PC1Unit.Defense = false;
+        PC2Unit.Defense = false;
+
+        PC1Unit.Counter = false;
+        PC2Unit.Counter = false;
+
+        Turn++;
+
+        state = BattleState.DiceRoll;
+        Invoke("DiceRoll", 1f);
+    }
+
+    void DiceRoll()
     {
         Dice1 = Random.Range(1, 7);
         Dice2 = Random.Range(1, 7);
         
         Debug.Log(Dice1 + "vs" + Dice2);
 
-        state = BattleState.BEHAVIOR;
-        BEHAVIOR();
+        state = BattleState.Action;
+        Invoke("Action", 1f);
     }
 
-    void BEHAVIOR()
+    void Action()
     {
         EnemyAction();
         if(PC1Unit.PCBehavior && PC2Unit.PCBehavior)
         {
-            state = BattleState.RESULT;
-            RESULT();
+            state = BattleState.Result;
+            Invoke("Result", 1f);
         }
     }
 
@@ -87,7 +107,7 @@ public class BattleSystem : MonoBehaviour
     #region 버튼
     public void OnAttackButton()
     {
-        if(state != BattleState.BEHAVIOR)
+        if(state != BattleState.Action)
             return;
 
         if(PC1Unit.turnSkip == false)
@@ -101,12 +121,12 @@ public class BattleSystem : MonoBehaviour
             PC1Unit.PCBehavior = true;
         }
 
-        BEHAVIOR();
+        Action();
     }
 
     public void OnDefenseButton()
     {
-        if(state != BattleState.BEHAVIOR)
+        if(state != BattleState.Action)
             return;
 
         if (PC1Unit.turnSkip == false)
@@ -120,12 +140,12 @@ public class BattleSystem : MonoBehaviour
             PC1Unit.PCBehavior = true;
         }
 
-        BEHAVIOR();
+        Action(); 
     }
 
     public void OnCounterButton()   
     {
-        if(state != BattleState.BEHAVIOR)
+        if(state != BattleState.Action)
             return;
 
         if (PC1Unit.turnSkip == false)
@@ -139,33 +159,33 @@ public class BattleSystem : MonoBehaviour
             PC1Unit.PCBehavior = true;
         }
 
-        BEHAVIOR();
+        Action();
     }
     #endregion
 
-    void RESULT()
+    void Result()
     {
         Debug.Log("결과창입니다.");
 
         if (PC1Unit.Attack && PC2Unit.Attack)
         {
             Debug.Log("아무일도 일어나지 않았다.");
-            state = BattleState.START;
-            StartCoroutine(SetupBattle());
+            state = BattleState.ResetTurn;
+            Invoke("ResetTurn", 1f);
         }
 
         if (PC1Unit.Defense && PC2Unit.Defense)
         {
             Debug.Log("아무일도 일어나지 않았다.");
-            state = BattleState.START;
-            StartCoroutine(SetupBattle());
+            state = BattleState.ResetTurn;
+            Invoke("ResetTurn", 1f);
         }
 
         if (PC1Unit.Counter && PC2Unit.Counter)
         {
             Debug.Log("아무일도 일어나지 않았다.");
-            state = BattleState.START;
-            StartCoroutine(SetupBattle());
+            state = BattleState.ResetTurn;
+            Invoke("ResetTurn", 1f);
         }
 
         if (PC1Unit.Attack && PC2Unit.Defense)
@@ -173,14 +193,14 @@ public class BattleSystem : MonoBehaviour
             if (Dice1 > Dice2)
             {
                 PC2Unit.currentHP -= Dice2 - Dice1;
-                state = BattleState.START;
-                StartCoroutine(SetupBattle());
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
             }
             else
             {
                 Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.START;
-                StartCoroutine(SetupBattle());
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
             }
         }
 
@@ -189,14 +209,14 @@ public class BattleSystem : MonoBehaviour
             if (Dice1 < Dice2)
             {
                 PC1Unit.currentHP -= Dice2 - Dice1;
-                state = BattleState.START;
-                StartCoroutine(SetupBattle());
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
             }
             else
             {
                 Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.START;
-                StartCoroutine(SetupBattle());
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
             }
         }
 
@@ -205,12 +225,14 @@ public class BattleSystem : MonoBehaviour
             if (Dice1 < Dice2)
             {
                 PC1Unit.turnSkip = true;
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
             }
             else
             {
                 Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.START;
-                StartCoroutine(SetupBattle());
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
             }
         }
 
@@ -219,26 +241,46 @@ public class BattleSystem : MonoBehaviour
             if (Dice1 > Dice2)
             {
                 PC1Unit.turnSkip = true;
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
             }
             else
             {
                 Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.START;
-                StartCoroutine(SetupBattle());
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
             }
         }
 
         if (PC1Unit.Counter && PC2Unit.Attack)
         {
-            if (Dice1 > Dice2)
+            if (Dice1 < Dice2)
             {
                 PC1Unit.currentHP -= Dice1 + Dice2;
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
             }
             else
             {
                 Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.START;
-                StartCoroutine(SetupBattle());
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
+            }
+        }
+
+        if (PC1Unit.Attack && PC2Unit.Counter)
+        {
+            if (Dice1 > Dice2)
+            {
+                PC2Unit.currentHP -= Dice2 + Dice1;
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+                state = BattleState.ResetTurn;
+                Invoke("ResetTurn", 1f);
             }
         }
     }
