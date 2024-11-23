@@ -43,7 +43,7 @@ public class BattleSystem : MonoBehaviour
 
     void ResetTurn()
     {
-        Debug.Log("PC1체력 : " + PC1Unit.currentHP + "PC2체력 : " + PC2Unit.currentHP);
+        Debug.Log("PC1체력 : " + PC1Unit.currentHP + "\nPC2체력 : " + PC2Unit.currentHP);
 
         PC1Unit.Attack = false;
         PC2Unit.Attack = false;
@@ -53,6 +53,9 @@ public class BattleSystem : MonoBehaviour
 
         PC1Unit.Counter = false;
         PC2Unit.Counter = false;
+
+        PC1Unit.PCBehavior = false;
+        PC2Unit.PCBehavior = false;
 
         Turn++;
 
@@ -73,7 +76,7 @@ public class BattleSystem : MonoBehaviour
 
     void Action()
     {
-        EnemyAction();
+        EnemyAction();  
         if(PC1Unit.PCBehavior && PC2Unit.PCBehavior)
         {
             state = BattleState.Result;
@@ -86,7 +89,7 @@ public class BattleSystem : MonoBehaviour
     {
         int enemyBehavior = Random.Range(1, 4);
 
-        switch(enemyBehavior)
+        switch (enemyBehavior)
         {
             case 1:
                 PC2Unit.Attack = true;
@@ -110,14 +113,13 @@ public class BattleSystem : MonoBehaviour
         if(state != BattleState.Action)
             return;
 
-        if(PC1Unit.turnSkip == false)
+        if(PC1Unit.turnSkip != true)
         {
             PC1Unit.Attack = true;
             PC1Unit.PCBehavior = true;
         }
         else
         {
-            PC1Unit.turnSkip = false;
             PC1Unit.PCBehavior = true;
         }
 
@@ -129,14 +131,13 @@ public class BattleSystem : MonoBehaviour
         if(state != BattleState.Action)
             return;
 
-        if (PC1Unit.turnSkip == false)
+        if (PC1Unit.turnSkip != true)
         {
             PC1Unit.Defense = true;
             PC1Unit.PCBehavior = true;
         }
         else
         {
-            PC1Unit.turnSkip = false;
             PC1Unit.PCBehavior = true;
         }
 
@@ -148,14 +149,13 @@ public class BattleSystem : MonoBehaviour
         if(state != BattleState.Action)
             return;
 
-        if (PC1Unit.turnSkip == false)
+        if (PC1Unit.turnSkip != true)
         {
             PC1Unit.Counter = true;
             PC1Unit.PCBehavior = true;
         }
         else
         {
-            PC1Unit.turnSkip = false;
             PC1Unit.PCBehavior = true;
         }
 
@@ -167,121 +167,36 @@ public class BattleSystem : MonoBehaviour
     {
         Debug.Log("결과창입니다.");
 
-        if (PC1Unit.Attack && PC2Unit.Attack)
+        if(PC1Unit.turnSkip)
         {
-            Debug.Log("아무일도 일어나지 않았다.");
-            state = BattleState.ResetTurn;
-            Invoke("ResetTurn", 1f);
+            PC1Unit.turnSkip = false;
         }
 
-        if (PC1Unit.Defense && PC2Unit.Defense)
+        if (PC2Unit.turnSkip)
         {
-            Debug.Log("아무일도 일어나지 않았다.");
-            state = BattleState.ResetTurn;
-            Invoke("ResetTurn", 1f);
+            PC2Unit.turnSkip = false;
         }
 
-        if (PC1Unit.Counter && PC2Unit.Counter)
+        if (Dice1 > Dice2)
         {
-            Debug.Log("아무일도 일어나지 않았다.");
-            state = BattleState.ResetTurn;
-            Invoke("ResetTurn", 1f);
+            PC1Win();
         }
+        else if(Dice1 < Dice2)
+        {
+            PC2Win();
+        }
+    }
 
-        if (PC1Unit.Attack && PC2Unit.Defense)
+    void PC1Win()
+    {
+        if(PC1Unit.Attack && PC2Unit.Attack)
         {
-            if (Dice1 > Dice2)
-            {
-                PC2Unit.currentHP -= Dice2 - Dice1;
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-            else
-            {
-                Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
+            PC2Unit.currentHP -= Dice1;
         }
+    }
 
-        if (PC1Unit.Defense && PC2Unit.Attack)
-        {
-            if (Dice1 < Dice2)
-            {
-                PC1Unit.currentHP -= Dice2 - Dice1;
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-            else
-            {
-                Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-        }
-
-        if (PC1Unit.Counter && PC2Unit.Defense)
-        {
-            if (Dice1 < Dice2)
-            {
-                PC1Unit.turnSkip = true;
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-            else
-            {
-                Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-        }
-
-        if (PC1Unit.Defense && PC2Unit.Counter)
-        {
-            if (Dice1 > Dice2)
-            {
-                PC1Unit.turnSkip = true;
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-            else
-            {
-                Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-        }
-
-        if (PC1Unit.Counter && PC2Unit.Attack)
-        {
-            if (Dice1 < Dice2)
-            {
-                PC1Unit.currentHP -= Dice1 + Dice2;
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-            else
-            {
-                Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-        }
-
-        if (PC1Unit.Attack && PC2Unit.Counter)
-        {
-            if (Dice1 > Dice2)
-            {
-                PC2Unit.currentHP -= Dice2 + Dice1;
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-            else
-            {
-                Debug.Log("아무일도 일어나지 않았다.");
-                state = BattleState.ResetTurn;
-                Invoke("ResetTurn", 1f);
-            }
-        }
+    void PC2Win()
+    {
+        
     }
 }
