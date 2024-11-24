@@ -67,7 +67,7 @@ public class BattleSystem : MonoBehaviour
     {
         Dice1 = Random.Range(1, 7);
         Dice2 = Random.Range(1, 7);
-        
+
         Debug.Log(Dice1 + "vs" + Dice2);
 
         state = BattleState.Action;
@@ -76,8 +76,9 @@ public class BattleSystem : MonoBehaviour
 
     void Action()
     {
-        EnemyAction();  
-        if(PC1Unit.PCBehavior && PC2Unit.PCBehavior)
+        if(PC2Unit.PCBehavior == false)
+            EnemyAction();
+        if (PC1Unit.PCBehavior && PC2Unit.PCBehavior)
         {
             state = BattleState.Result;
             Invoke("Result", 1f);
@@ -110,10 +111,10 @@ public class BattleSystem : MonoBehaviour
     #region 버튼
     public void OnAttackButton()
     {
-        if(state != BattleState.Action)
+        if (state != BattleState.Action)
             return;
 
-        if(PC1Unit.turnSkip != true)
+        if (PC1Unit.turnSkip != true)
         {
             PC1Unit.Attack = true;
             PC1Unit.PCBehavior = true;
@@ -128,7 +129,7 @@ public class BattleSystem : MonoBehaviour
 
     public void OnDefenseButton()
     {
-        if(state != BattleState.Action)
+        if (state != BattleState.Action)
             return;
 
         if (PC1Unit.turnSkip != true)
@@ -141,12 +142,12 @@ public class BattleSystem : MonoBehaviour
             PC1Unit.PCBehavior = true;
         }
 
-        Action(); 
+        Action();
     }
 
-    public void OnCounterButton()   
+    public void OnCounterButton()
     {
-        if(state != BattleState.Action)
+        if (state != BattleState.Action)
             return;
 
         if (PC1Unit.turnSkip != true)
@@ -167,7 +168,7 @@ public class BattleSystem : MonoBehaviour
     {
         Debug.Log("결과창입니다.");
 
-        if(PC1Unit.turnSkip)
+        if (PC1Unit.turnSkip)
         {
             PC1Unit.turnSkip = false;
         }
@@ -177,26 +178,121 @@ public class BattleSystem : MonoBehaviour
             PC2Unit.turnSkip = false;
         }
 
-        if (Dice1 > Dice2)
+        if (PC1Unit.Attack && PC2Unit.Attack)
         {
-            PC1Win();
+            if (Dice1 > Dice2)
+            {
+                Debug.Log("PC1의 공격");
+                PC2Unit.currentHP -= Dice1;
+                Debug.Log("PC2HP : " + PC2Unit.currentHP);
+            }
+            else if (Dice1 < Dice2)
+            {
+                Debug.Log("PC2의 공격");
+                PC1Unit.currentHP -= Dice2;
+                Debug.Log("PC1HP : " + PC1Unit.currentHP);
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+            }
         }
-        else if(Dice1 < Dice2)
-        {
-            PC2Win();
-        }
-    }
 
-    void PC1Win()
-    {
-        if(PC1Unit.Attack && PC2Unit.Attack)
+        else if (PC1Unit.Defense && PC2Unit.Defense)
         {
-            PC2Unit.currentHP -= Dice1;
+            Debug.Log("아무일도 일어나지 않았다.");
         }
-    }
 
-    void PC2Win()
-    {
-        
+        else if (PC1Unit.Counter && PC2Unit.Counter)
+        {
+            Debug.Log("아무일도 일어나지 않았다.");
+        }
+
+        else if (PC1Unit.Attack && PC2Unit.Defense)
+        {
+            if (Dice1 > Dice2)
+            {
+                Debug.Log("PC1의 공격");
+                PC2Unit.currentHP -= Dice1 - Dice2;
+                Debug.Log("PC2HP : " + PC2Unit.currentHP);
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+            }
+        }
+
+        else if (PC1Unit.Defense && PC2Unit.Attack)
+        {
+            if (Dice1 < Dice2)
+            {
+                Debug.Log("PC2의 공격");
+                PC1Unit.currentHP -= Dice2 - Dice1;
+                Debug.Log("PC1HP : " + PC1Unit.currentHP);
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+            }
+        }
+
+        else if (PC1Unit.Counter && PC2Unit.Attack)
+        {
+            if (Dice1 < Dice2)
+            {
+                Debug.Log("PC1의 반격");
+                PC2Unit.currentHP -= Dice2 + Dice1;
+                Debug.Log("PC2HP : " + PC2Unit.currentHP);
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+            }
+        }
+
+        else if (PC1Unit.Attack && PC2Unit.Counter)
+        {
+            if (Dice1 > Dice2)
+            {
+                Debug.Log("PC2의 반격");
+                PC1Unit.currentHP -= Dice1 + Dice2;
+                Debug.Log("PC1HP : " + PC1Unit.currentHP);
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+            }
+        }
+
+        else if(PC1Unit.Defense && PC2Unit.Counter)
+        {
+            if (Dice1 > Dice2)
+            {
+                PC2Unit.turnSkip = true;
+                Debug.Log("PC2의 흐트러짐");
+                Debug.Log("다음 한턴을 쉬게된다.");
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+            }
+        }
+
+        else if (PC1Unit.Counter && PC2Unit.Defense)
+        {
+            if (Dice1 < Dice2)
+            {
+                PC2Unit.turnSkip = true;
+                Debug.Log("PC1의 흐트러짐");
+                Debug.Log("다음 한턴을 쉬게된다.");
+            }
+            else
+            {
+                Debug.Log("아무일도 일어나지 않았다.");
+            }
+        }
+
+        state = BattleState.ResetTurn;
+        Invoke("ResetTurn", 3f);
     }
 }
